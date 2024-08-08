@@ -57,6 +57,7 @@ span {
   margin-top: 10px;
   margin-right: auto;
   margin-left: auto;
+  margin-top: 32px;
 
   font-weight: 600;
   text-align: center;
@@ -78,4 +79,17 @@ span {
   clip-path: inset(100%);
   clip: rect(0 0 0 0);
   overflow: hidden;
+}
+
+.error {
+  display: block;
+
+  margin-top: 10px;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 32px;
+
+  text-align: center;
+
+  color: red;
 }

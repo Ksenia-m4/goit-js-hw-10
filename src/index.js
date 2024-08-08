@@ -18,15 +18,26 @@ const catApiService = new CatApiService();
 
 selectEl.addEventListener('input', onSelect);
 
+selectEl.classList.add('is-hidden');
+errorEl.classList.add('is-hidden');
+
 // 3. При загрузке страницы должен выполняться HTTP-запрос за коллекцией пород. При успешном запросе, необходимо наполнить select.breed-select опциями так, чтобы value опции содержал id породы, а в интерфейсе пользователю отображалось название породы.
 
-catApiService.fetchBreeds().then(data => {
-  loaderEl.classList.add('is-hidden');
-  return data.forEach(({ id, name }) => {
-    let newOption = new Option(name, id);
-    selectEl.append(newOption);
+catApiService
+  .fetchBreeds()
+  .then(data => {
+    loaderEl.classList.add('is-hidden');
+    selectEl.classList.remove('is-hidden');
+    return data.forEach(({ id, name }) => {
+      let newOption = new Option(name, id);
+      selectEl.append(newOption);
+    });
+  })
+  .catch(err => {
+    errorEl.classList.remove('is-hidden');
+    loaderEl.classList.add('is-hidden');
+    selectEl.classList.add('is-hidden');
   });
-});
 
 // 5. Когда пользователь выбирает опцию в селекте, необходимо выполнять запрос за полной информацией о коте на ресурс https://api.thecatapi.com/v1/images/search.
 
@@ -61,9 +72,9 @@ function createMarkup(arr) {
 
 // Обработка состояния загрузки
 // Пока идет любой HTTP-запрос, необходимо показывать загрузчик - элемент p.loader. Пока запросов нет или когда запрос завершился, загрузчик необходимо скрывать. Используй для этого дополнительные CSS классы.
-
 // Пока идет запрос за списком пород, необходимо скрыть select.breed-select и показать p.loader.
-
 // Пока идет запрос за инфорацией о коте, необходимо скрыть div.cat-info и показать p.loader.
-
 // Когда любой запрос завершился, p.loader необходимо скрыть
+
+// Обработка ошибки
+// Если у пользователя произошла ошибка любого HTTP-запроса, например упала сеть, была потеря пакетов и т. п., то есть промис был отклонен, необходимо отобразить элемент p.error, а при каждом последующем запросе скрывать его. Используй для этого дополнительные CSS классы.
