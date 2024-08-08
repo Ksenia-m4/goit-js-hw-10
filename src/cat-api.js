@@ -7,6 +7,8 @@ export default class CatApiService {
     this.breedId = '';
   }
 
+  // 4. Напиши функцию fetchBreeds() которая делает HTTP-запрос и возвращает промис с массивом пород - результатом запроса. Вынеси её в файл cat-api.js и сделай именованный экспорт.
+
   fetchBreeds() {
     return fetch(`${BASE_URL}breeds?api_key=${API_KEY}`)
       .then(response => {
@@ -20,6 +22,8 @@ export default class CatApiService {
       })
       .catch(err => console.log(err));
   }
+
+  // 6. Напиши функцию fetchCatByBreed(breedId) которая ожидает идентификатор породы, делает HTTP-запрос и возвращает промис с данными о коте - результатом запроса. Вынеси её в файл cat-api.js и сделай именованный экспорт.
 
   fetchCatByBreed() {
     return fetch(

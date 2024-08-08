@@ -1,32 +1,48 @@
-// Использовать ключ необходимо в HTTP-заголовке x-api-key. Рекомендуется использовать axios и добавить заголовок для всех запросов.
+// Создай фронтенд часть приложения поиска информации о коте по его породе.
+
+// 1. Используй публичный The Cat API.
+// Рекомендуется использовать axios и добавить заголовок для всех запросов.
 
 // import axios from 'axios';
 // axios.defaults.baseURL = 'https://api.thecatapi.com/v1';
-// axios.defaults.headers.common['x-api-key'] =
+// axios.defaults.headers.common['x-api-key'] = "твой ключ";
 
 import CatApiService from './cat-api';
 
 const selectEl = document.querySelector('.breed-select');
 const catContainer = document.querySelector('.cat-info');
-
-selectEl.addEventListener('input', onSelect);
+const loaderEl = document.querySelector('.loader');
+const errorEl = document.querySelector('.error');
 
 const catApiService = new CatApiService();
 
-catApiService.fetchBreeds().then(data =>
-  data.forEach(({ id, name }) => {
+selectEl.addEventListener('input', onSelect);
+
+// 3. При загрузке страницы должен выполняться HTTP-запрос за коллекцией пород. При успешном запросе, необходимо наполнить select.breed-select опциями так, чтобы value опции содержал id породы, а в интерфейсе пользователю отображалось название породы.
+
+catApiService.fetchBreeds().then(data => {
+  loaderEl.classList.add('is-hidden');
+  return data.forEach(({ id, name }) => {
     let newOption = new Option(name, id);
     selectEl.append(newOption);
-  })
-);
+  });
+});
+
+// 5. Когда пользователь выбирает опцию в селекте, необходимо выполнять запрос за полной информацией о коте на ресурс https://api.thecatapi.com/v1/images/search.
 
 function onSelect(evt) {
+  loaderEl.classList.remove('is-hidden');
+  catContainer.innerHTML = '';
+
   catApiService.breedId = evt.target.value;
 
-  catApiService
-    .fetchCatByBreed()
-    .then(data => (catContainer.innerHTML = createMarkup(data)));
+  catApiService.fetchCatByBreed().then(data => {
+    loaderEl.classList.add('is-hidden');
+    catContainer.innerHTML = createMarkup(data);
+  });
 }
+
+// 7. Если запрос был успешный, под селектом, в блоке div.cat-info появляется изображение и развернутая информация о коте: название породы, описание и темперамент.
 
 function createMarkup(arr) {
   return arr
@@ -36,9 +52,9 @@ function createMarkup(arr) {
       <div class="text-container">
       <h2>${breeds[0].name}</h2>
       <p class="subtitle">${breeds[0].origin}</p>
-      <p>${breeds[0].description}</p>
-      <p><span>Temperament:</span>${breeds[0].temperament}</p>
-      <p><span>Life span:</span>${breeds[0].life_span} years</p>`
+      <p class="text">${breeds[0].description}</p>
+      <p class="text"><span>Temperament:</span>${breeds[0].temperament}</p>
+      <p class="text"><span>Life span:</span>${breeds[0].life_span} years</p>`
     )
     .join('');
 }
@@ -47,9 +63,7 @@ function createMarkup(arr) {
 // Пока идет любой HTTP-запрос, необходимо показывать загрузчик - элемент p.loader. Пока запросов нет или когда запрос завершился, загрузчик необходимо скрывать. Используй для этого дополнительные CSS классы.
 
 // Пока идет запрос за списком пород, необходимо скрыть select.breed-select и показать p.loader.
-// Пока идет запрос за инфорацией о коте, необходимо скрыть div.cat-info и показать p.loader.
-// Когда любой запрос завершился, p.loader необходимо скрыть
-// Обработка ошибки
-// Если у пользователя произошла ошибка любого HTTP-запроса, например упала сеть, была потеря пакетов и т. п., то есть промис был отклонен, необходимо отобразить элемент p.error, а при каждом последующем запросе скрывать его. Используй для этого дополнительные CSS классы.
 
-// Протестировать работоспособноть отображения ошибки очень просто - измени адрес запроса добавив в конец любой символ, например вместо https://api.thecatapi.com/v1/breeds используй https://api.thecatapi.com/v1/breeds123. Запрос получения списка пород будет отклонен с ошибкой. Аналогично для запроса информации о коте по породе.
+// Пока идет запрос за инфорацией о коте, необходимо скрыть div.cat-info и показать p.loader.
+
+// Когда любой запрос завершился, p.loader необходимо скрыть
