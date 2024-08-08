@@ -32,13 +32,13 @@ function createMarkup(arr) {
   return arr
     .map(
       ({ url: img, breeds }) =>
-        `<img src="${img}" alt="${breeds[0].name}" class="img" width="500" />
-<div class="text-container">
-  <h2>${breeds[0].name}</h2>
-  <p class="subtitle">${breeds[0].origin}</p>
-  <p>${breeds[0].description}</p>
-  <p><span>Temperament:</span>${breeds[0].temperament}</p>
-  <p><span>Life span:</span>${breeds[0].life_span}</p>`
+        `<div class ="thumb"><img src="${img}" alt="${breeds[0].name}" class="img" /></div>
+      <div class="text-container">
+      <h2>${breeds[0].name}</h2>
+      <p class="subtitle">${breeds[0].origin}</p>
+      <p>${breeds[0].description}</p>
+      <p><span>Temperament:</span>${breeds[0].temperament}</p>
+      <p><span>Life span:</span>${breeds[0].life_span} years</p>`
     )
     .join('');
 }
