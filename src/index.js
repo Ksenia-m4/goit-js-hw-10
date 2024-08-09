@@ -1,22 +1,13 @@
-// Рекомендуется использовать axios и добавить заголовок для всех запросов.
-
-// import axios from 'axios';
-// axios.defaults.baseURL = 'https://api.thecatapi.com/v1';
-// axios.defaults.headers.common['x-api-key'] = "твой ключ";
-
 import CatApiService from './cat-api';
-
 import SlimSelect from 'slim-select';
 import 'slim-select/dist/slimselect.css';
 
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-// Notify.failure('Qui timide rogat docet negare');
 
 const selectEl = document.querySelector('.breed-select');
 const catContainer = document.querySelector('.cat-info');
 const loaderEl = document.querySelector('.loader');
 const errorEl = document.querySelector('.error');
-const spinnerEl = document.querySelector('.spinner');
 
 const catApiService = new CatApiService();
 
@@ -28,7 +19,7 @@ catApiService
   .fetchBreeds()
   .then(data => {
     selectEl.classList.remove('is-hidden');
-    spinnerEl.classList.add('is-hidden');
+
     loaderEl.classList.add('is-hidden');
 
     let makeNewOption = data.map(({ id, name }) => {
@@ -57,7 +48,6 @@ function onSelect(evt) {
   catApiService
     .fetchCatByBreed()
     .then(data => {
-      spinnerEl.classList.add('is-hidden');
       loaderEl.classList.add('is-hidden');
       catContainer.innerHTML = createMarkup(data);
     })
@@ -74,6 +64,7 @@ function createMarkup(arr) {
         temperament = 'Unknown',
         life_span = 'Unknown',
       } = breeds[0] || {};
+
       return `<div class ="thumb"><img src="${img}" alt="${name}" class="img" /></div>
       <div class="text-container">
       <h2>${name}</h2>
@@ -86,12 +77,12 @@ function createMarkup(arr) {
 }
 
 function onError() {
-  errorEl.classList.remove('is-hidden');
+  Notify.failure(errorEl.textContent);
+
   loaderEl.classList.add('is-hidden');
   selectEl.classList.add('is-hidden');
 }
 
 function onLoading() {
   loaderEl.classList.remove('is-hidden');
-  spinnerEl.classList.remove('is-hidden');
 }
