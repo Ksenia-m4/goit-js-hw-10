@@ -1,6 +1,3 @@
-// Создай фронтенд часть приложения поиска информации о коте по его породе.
-
-// 1. Используй публичный The Cat API.
 // Рекомендуется использовать axios и добавить заголовок для всех запросов.
 
 // import axios from 'axios';
@@ -9,72 +6,92 @@
 
 import CatApiService from './cat-api';
 
+import SlimSelect from 'slim-select';
+import 'slim-select/dist/slimselect.css';
+
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+// Notify.failure('Qui timide rogat docet negare');
+
 const selectEl = document.querySelector('.breed-select');
 const catContainer = document.querySelector('.cat-info');
 const loaderEl = document.querySelector('.loader');
 const errorEl = document.querySelector('.error');
+const spinnerEl = document.querySelector('.spinner');
 
 const catApiService = new CatApiService();
 
-selectEl.addEventListener('input', onSelect);
+selectEl.addEventListener('change', onSelect);
 
-selectEl.classList.add('is-hidden');
-errorEl.classList.add('is-hidden');
-
-// 3. При загрузке страницы должен выполняться HTTP-запрос за коллекцией пород. При успешном запросе, необходимо наполнить select.breed-select опциями так, чтобы value опции содержал id породы, а в интерфейсе пользователю отображалось название породы.
+onLoading();
 
 catApiService
   .fetchBreeds()
   .then(data => {
-    loaderEl.classList.add('is-hidden');
     selectEl.classList.remove('is-hidden');
-    return data.forEach(({ id, name }) => {
-      let newOption = new Option(name, id);
-      selectEl.append(newOption);
-    });
-  })
-  .catch(err => {
-    errorEl.classList.remove('is-hidden');
+    spinnerEl.classList.add('is-hidden');
     loaderEl.classList.add('is-hidden');
-    selectEl.classList.add('is-hidden');
-  });
 
-// 5. Когда пользователь выбирает опцию в селекте, необходимо выполнять запрос за полной информацией о коте на ресурс https://api.thecatapi.com/v1/images/search.
+    let makeNewOption = data.map(({ id, name }) => {
+      return `<option value ='${id}'>${name}</option>`;
+    });
+
+    selectEl.innerHTML = makeNewOption.join('');
+
+    new SlimSelect({
+      select: selectEl,
+      settings: {
+        showSearch: false,
+      },
+    });
+
+    onSelect({ target: selectEl });
+  })
+  .catch(onError);
 
 function onSelect(evt) {
-  loaderEl.classList.remove('is-hidden');
+  onLoading();
   catContainer.innerHTML = '';
 
   catApiService.breedId = evt.target.value;
 
-  catApiService.fetchCatByBreed().then(data => {
-    loaderEl.classList.add('is-hidden');
-    catContainer.innerHTML = createMarkup(data);
-  });
+  catApiService
+    .fetchCatByBreed()
+    .then(data => {
+      spinnerEl.classList.add('is-hidden');
+      loaderEl.classList.add('is-hidden');
+      catContainer.innerHTML = createMarkup(data);
+    })
+    .catch(onError);
 }
-
-// 7. Если запрос был успешный, под селектом, в блоке div.cat-info появляется изображение и развернутая информация о коте: название породы, описание и темперамент.
 
 function createMarkup(arr) {
   return arr
-    .map(
-      ({ url: img, breeds }) =>
-        `<div class ="thumb"><img src="${img}" alt="${breeds[0].name}" class="img" /></div>
+    .map(({ url: img = '', breeds = [] }) => {
+      const {
+        name = 'Unknown',
+        origin = 'Unknown',
+        description = 'No description available',
+        temperament = 'Unknown',
+        life_span = 'Unknown',
+      } = breeds[0] || {};
+      return `<div class ="thumb"><img src="${img}" alt="${name}" class="img" /></div>
       <div class="text-container">
-      <h2>${breeds[0].name}</h2>
-      <p class="subtitle">${breeds[0].origin}</p>
-      <p class="text">${breeds[0].description}</p>
-      <p class="text"><span>Temperament:</span>${breeds[0].temperament}</p>
-      <p class="text"><span>Life span:</span>${breeds[0].life_span} years</p>`
-    )
+      <h2>${name}</h2>
+      <p class="subtitle">${origin}</p>
+      <p class="text">${description}</p>
+      <p class="text"><span>Temperament:</span>${temperament}</p>
+      <p class="text"><span>Life span:</span>${life_span} years</p>`;
+    })
     .join('');
 }
 
-// Обработка состояния загрузки
-// Пока идет любой HTTP-запрос, необходимо показывать загрузчик - элемент p.loader. Пока запросов нет или когда запрос завершился, загрузчик необходимо скрывать. Используй для этого дополнительные CSS классы.
-// Пока идет запрос за списком пород, необходимо скрыть select.breed-select и показать p.loader.
-// Пока идет запрос за инфорацией о коте, необходимо скрыть div.cat-info и показать p.loader.
-// Когда любой запрос завершился, p.loader необходимо скрыть
+function onError() {
+  errorEl.classList.remove('is-hidden');
+  loaderEl.classList.add('is-hidden');
+  selectEl.classList.add('is-hidden');
+}
 
-// Обработка ошибки
-// Если у пользователя произошла ошибка любого HTTP-запроса, например упала сеть, была потеря пакетов и т. п., то есть промис был отклонен, необходимо отобразить элемент p.error, а при каждом последующем запросе скрывать его. Используй для этого дополнительные CSS классы.
+function onLoading() {
+  loaderEl.classList.remove('is-hidden');
+  spinnerEl.classList.remove('is-hidden');
+}
